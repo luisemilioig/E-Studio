@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E Studio Oracle — 3 Card Reading</title>
+<link href="https://fonts.googleapis.com/css2?family=Museomoderno:wght@300;400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--green:#c1d892;--dark:#1a1c18;--darker:#111310;--font-d:'Museomoderno',Georgia,serif;--font-m:'Space Mono',monospace}
+html{scroll-behavior:smooth}
+body{background:var(--darker);color:#f5f5f0;font-family:var(--font-m);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;border-radius:50%;pointer-events:none;filter:blur(140px);opacity:.055;z-index:0}
+.g1{width:500px;height:500px;background:var(--green);top:-150px;left:-150px}
+.g2{width:400px;height:400px;background:var(--green);bottom:-120px;right:-100px}
+
+/* HEADER */
+.hdr{text-align:center;padding:4rem 2rem 2rem;position:relative;z-index:2}
+.back{position:absolute;top:2rem;left:2rem;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(193,216,146,.45);text-decoration:none;border-bottom:1px solid rgba(193,216,146,.2);padding-bottom:2px;transition:color .3s,border-color .3s}
+.back:hover{color:var(--green);border-color:var(--green)}
+.stamp{width:58px;height:82px;border:1.5px solid rgba(193,216,146,.25);border-radius:9px;margin:0 auto 1.5rem;overflow:hidden;box-shadow:0 0 28px rgba(193,216,146,.08)}
+.stamp img{width:100%;height:100%;object-fit:cover}
+.eye{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--green);margin-bottom:.75rem}
+h1{font-family:var(--font-d);font-size:clamp(2.6rem,6vw,4.8rem);font-weight:300;line-height:1;margin-bottom:1rem}
+h1 span{color:var(--green);font-weight:700}
+.sub{font-size:.72rem;color:rgba(255,255,255,.38);letter-spacing:.08em;line-height:1.9;max-width:400px;margin:0 auto 2.5rem}
+
+/* SPREAD SELECTOR */
+.sp-wrap{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+.sp-btn{padding:.38rem 1rem;border:1.5px solid rgba(193,216,146,.2);background:transparent;border-radius:999px;font-family:var(--font-m);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.38);cursor:pointer;transition:all .28s}
+.sp-btn:hover,.sp-btn.active{background:var(--green);color:var(--dark);border-color:var(--green)}
+
+/* DRAW BTN */
+.draw-wrap{text-align:center;margin-bottom:3.5rem;position:relative;z-index:2}
+.draw-btn{background:transparent;border:1.5px solid var(--green);color:var(--green);padding:.95rem 3rem;border-radius:999px;font-family:var(--font-d);font-size:1rem;font-weight:600;letter-spacing:.1em;cursor:pointer;position:relative;overflow:hidden;transition:color .3s}
+.draw-btn::before{content:'';position:absolute;inset:0;background:var(--green);transform:translateY(101%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.draw-btn:hover::before{transform:translateY(0)}
+.draw-btn:hover{color:var(--dark)}
+.draw-btn span{position:relative;z-index:1}
+.draw-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* LABELS + HINT */
+.pl-row{display:flex;justify-content:center;max-width:820px;margin:0 auto .75rem;padding:0 2rem}
+.pl{flex:1;text-align:center;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(193,216,146,.42);opacity:0;transition:opacity .5s}
+.pl.vis{opacity:1}
+.hint{text-align:center;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(193,216,146,.28);margin-bottom:2rem;opacity:0;transition:opacity .5s}
+.hint.vis{opacity:1}
+
+/* SPREAD */
+.spread{display:flex;justify-content:center;gap:1.5rem;padding:0 2rem 4rem;position:relative;z-index:2;flex-wrap:wrap}
+.slot{width:195px;flex-shrink:0}
+.flipper{width:195px;height:332px;perspective:1000px;cursor:pointer}
+.ci{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.4,0,.2,1)}
+.ci.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:13px;overflow:hidden;border:1.5px solid rgba(193,216,146,.2);box-shadow:0 8px 40px rgba(0,0,0,.55)}
+.ff{transform:rotateY(180deg)}
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{width:195px;height:332px;border:1.5px dashed rgba(193,216,146,.12);border-radius:13px;display:flex;align-items:center;justify-content:center;color:rgba(193,216,146,.18);font-family:var(--font-d);font-size:2rem}
+.sl{text-align:center;margin-top:.85rem;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(193,216,146,.35);min-height:1rem}
+
+/* READING */
+.reading{max-width:820px;margin:0 auto 6rem;padding:0 2rem;position:relative;z-index:2}
+.divider{display:flex;align-items:center;gap:1.2rem;margin-bottom:2.5rem;opacity:0;transition:opacity .6s}
+.divider.vis{opacity:1}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(193,216,146,.12)}
+.div-txt{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(193,216,146,.35)}
+.dg{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2.5rem}
+.dc{background:rgba(193,216,146,.025);border:1px solid rgba(193,216,146,.07);border-radius:15px;padding:1.5rem;opacity:0;transform:translateY(18px);transition:opacity .5s,transform .5s}
+.dc.vis{opacity:1;transform:translateY(0)}
+.dc-pos{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(193,216,146,.38);margin-bottom:.4rem}
+.dc-name{font-family:var(--font-d);font-size:1rem;font-weight:700;color:var(--green);margin-bottom:.3rem;line-height:1.2}
+.dc-keys{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:.7rem}
+.dc-m{font-size:.76rem;line-height:1.75;color:rgba(255,255,255,.52)}
+.syn{background:rgba(193,216,146,.03);border:1px solid rgba(193,216,146,.1);border-radius:18px;padding:2.5rem;opacity:0;transform:translateY(18px);transition:opacity .6s .25s,transform .6s .25s}
+.syn.vis{opacity:1;transform:translateY(0)}
+.syn-lbl{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:1rem}
+.syn-txt{font-family:var(--font-d);font-weight:300;font-size:clamp(.95rem,1.8vw,1.15rem);line-height:1.85;color:rgba(255,255,255,.78)}
+.syn-txt em{color:var(--green);font-style:normal;font-weight:600}
+.syn-txt p{margin-bottom:1rem}
+
+/* ── FULL DECK GALLERY ─────────────────────────────── */
+.full-deck{max-width:980px;margin:0 auto 5rem;padding:0 2rem;position:relative;z-index:2}
+.fd-header{display:flex;align-items:center;gap:1.2rem;margin-bottom:2rem}
+.fd-header::before,.fd-header::after{content:'';flex:1;height:1px;background:rgba(193,216,146,.1)}
+.fd-title{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(193,216,146,.35);white-space:nowrap}
+
+.deck-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:.65rem}
+.dg-item{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.dg-flipper{width:100%;aspect-ratio:9/16;perspective:800px;cursor:pointer}
+.dg-ci{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,0,.2,1)}
+.dg-flipper:hover .dg-ci,.dg-flipper.flipped .dg-ci{transform:rotateY(180deg)}
+.dg-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:8px;overflow:hidden;border:1px solid rgba(193,216,146,.15);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.dg-ff{transform:rotateY(180deg)}
+.dg-face img{width:100%;height:100%;object-fit:cover;display:block}
+.dg-item span{font-size:.44rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(193,216,146,.28);text-align:center;line-height:1.3}
+
+/* INFO CARD */
+.info-card-wrap{max-width:980px;margin:0 auto 5rem;padding:0 2rem;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.info-card-label{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(193,216,146,.3)}
+.info-card-img{width:195px;border-radius:13px;overflow:hidden;border:1.5px solid rgba(193,216,146,.2);box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.info-card-img img{width:100%;display:block}
+
+footer{text-align:center;padding:2rem;border-top:1px solid rgba(193,216,146,.07);position:relative;z-index:2;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(193,216,146,.2)}
+
+@media(max-width:680px){
+  .slot,.flipper{width:140px}.flipper{height:238px}.ph{width:140px;height:238px}
+  .dg{grid-template-columns:1fr}.spread{gap:.65rem;padding:0 1rem 3rem}
+  .deck-grid{grid-template-columns:repeat(5,1fr)}
+  .hdr{padding:3rem 1.25rem 1.5rem}
+  h1{font-size:clamp(2rem,8vw,3rem)}
+  .sp-wrap{gap:.4rem}
+  .sp-btn{font-size:.56rem;padding:.3rem .75rem}
+  .reading{padding:0 1.25rem}
+  .full-deck{padding:0 1.25rem}
+  .syn{padding:1.5rem}
+}
+@media(max-width:480px){
+  .slot,.flipper{width:calc(33vw - 1.5rem)}.flipper{height:calc((33vw - 1.5rem)*1.7)}.ph{width:calc(33vw - 1.5rem);height:calc((33vw - 1.5rem)*1.7)}
+  .spread{gap:.5rem}
+  .deck-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:420px){
+  .deck-grid{grid-template-columns:repeat(3,1fr)}
+  .hdr{padding:2.5rem 1rem 1rem}
+}
+/* Touch device fixes */
+@media(hover:none),(pointer:coarse){
+  body{cursor:auto}
+  .draw-btn,.sp-btn,.dg-flipper,.flipper{cursor:pointer}
+  /* On mobile, show card face slightly faded by default so user knows to tap */
+  .face img{-webkit-tap-highlight-color:transparent}
+}
+</style>
+</head>
+<body>
+<div class="glow g1"></div><div class="glow g2"></div>
+
+<header class="hdr">
+  <a href="index.html" class="back">← Back to Studio</a>
+  <!-- Card 28 = info/studio card used as stamp -->
+  <div class="stamp"><img src="IMAGES/CARD DECK/carddeck28.jpg" alt="E Studio"></div>
+  <div class="eye">E Studio · Oracle Deck</div>
+  <h1>Your<br><span>Reading</span></h1>
+  <p class="sub">Each card carries the energy of a real creative act. Choose your spread, draw three cards, let the work speak.</p>
+  <div class="sp-wrap">
+    <button class="sp-btn active" data-spread="past-present-future">Past · Present · Future</button>
+    <button class="sp-btn" data-spread="mind-body-spirit">Mind · Body · Spirit</button>
+    <button class="sp-btn" data-spread="situation-action-outcome">Situation · Action · Outcome</button>
+    <button class="sp-btn" data-spread="what-why-how">What · Why · How</button>
+  </div>
+</header>
+
+<div class="draw-wrap">
+  <button class="draw-btn" id="drawBtn"><span id="drawTxt">✦ Draw Your Cards</span></button>
+</div>
+
+<div class="pl-row">
+  <div class="pl" id="pl0"></div>
+  <div class="pl" id="pl1"></div>
+  <div class="pl" id="pl2"></div>
+</div>
+<div class="hint" id="hint">Tap each card to reveal</div>
+
+<div class="spread" id="spread">
+  <div class="slot" id="s0"><div class="ph">✦</div><div class="sl"></div></div>
+  <div class="slot" id="s1"><div class="ph">✦</div><div class="sl"></div></div>
+  <div class="slot" id="s2"><div class="ph">✦</div><div class="sl"></div></div>
+</div>
+
+<div class="reading">
+  <div class="divider" id="div"><span class="div-txt">Your Reading</span></div>
+  <div class="dg" id="dg"></div>
+  <div class="syn" id="syn">
+    <div class="syn-lbl">✦ The Message</div>
+    <div class="syn-txt" id="synTxt"></div>
+  </div>
+</div>
+
+<!-- ── FULL DECK GALLERY — all 27 drawable cards ── -->
+<!-- Cards 1–27 are oracle cards. Card 28 = studio info. Card 29 = back pattern. -->
+<div class="full-deck">
+  <div class="fd-header"><span class="fd-title">✦ The Full Deck — All 27 Cards — Hover to peek · Click to lock</span></div>
+  <div class="deck-grid">
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck.jpg" alt="Pedro Páramo"></div></div></div><span>Pedro Páramo</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck2.jpg" alt="Pedro Páramo II"></div></div></div><span>Pedro Páramo II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck3.jpg" alt="Botanical Freq."></div></div></div><span>Botanical Freq.</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck4.jpg" alt="Botanical Freq. II"></div></div></div><span>Botanical Freq. II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck5.jpg" alt="Charro Negro"></div></div></div><span>Charro Negro</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck6.jpg" alt="Charro Negro II"></div></div></div><span>Charro Negro II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck7.jpg" alt="Red Moon in Venus"></div></div></div><span>Red Moon in Venus</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck8.jpg" alt="Red Moon II"></div></div></div><span>Red Moon II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck9.jpg" alt="Florarium"></div></div></div><span>Florarium</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck10.jpg" alt="Florarium II"></div></div></div><span>Florarium II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck11.jpg" alt="Club Muse"></div></div></div><span>Club Muse</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck12.jpg" alt="Club Muse II"></div></div></div><span>Club Muse II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck13.jpg" alt="Sacred Flame"></div></div></div><span>Sacred Flame</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck14.jpg" alt="The Visionary"></div></div></div><span>The Visionary</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck15.jpg" alt="Between"></div></div></div><span>Between</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck16.jpg" alt="Between Lights"></div></div></div><span>Between Lights</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck17.jpg" alt="Lunaura"></div></div></div><span>Lunaura</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck18.jpg" alt="Lunaura II"></div></div></div><span>Lunaura II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck19.jpg" alt="Sproutlings"></div></div></div><span>Sproutlings</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck20.jpg" alt="Sproutlings II"></div></div></div><span>Sproutlings II</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck21.jpg" alt="Orchids of Mexico"></div></div></div><span>Orchids of Mexico</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck22.jpg" alt="Over the Moon"></div></div></div><span>Over the Moon</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck23.jpg" alt="SMW"></div></div></div><span>SMW</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck24.jpg" alt="Self-Portrait"></div></div></div><span>Self-Portrait</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck25.jpg" alt="Crystal in Water"></div></div></div><span>Crystal in Water</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck26.jpg" alt="Friends and I"></div></div></div><span>Friends and I</span></div>
+    <div class="dg-item"><div class="dg-flipper"><div class="dg-ci"><div class="dg-face"><img src="IMAGES/CARD DECK/carddeck29.jpg" alt="back"></div><div class="dg-face dg-ff"><img src="IMAGES/CARD DECK/carddeck27.jpg" alt="Night Stan"></div></div></div><span>Night Stan</span></div>
+  </div>
+</div>
+
+<!-- Info card — shown face-up, not in the draw pool -->
+<div class="info-card-wrap">
+  <div class="info-card-label">✦ Card 28 — Studio Info Card</div>
+  <div class="info-card-img"><img src="IMAGES/CARD DECK/carddeck28.jpg" alt="E Studio Info Card"></div>
+</div>
+
+<footer>E Studio · Connecting Ideas · Luis Emilio Infante Grimaldo · e-studiodesign.com</footer>
+
+<script>
+// Full deck gallery: hover to peek (CSS), click to lock flipped
+document.querySelectorAll('.dg-flipper').forEach(f => {
+  f.addEventListener('click', () => f.classList.toggle('flipped'));
+  // Touch: first tap = flip, second tap = unflip
+  f.addEventListener('touchend', (e) => { e.preventDefault(); f.classList.toggle('flipped'); });
+});
+
+// ── ORACLE ENGINE ──────────────────────────────────────────
+// Card 1  = carddeck.jpg
+// Card 2  = carddeck2.jpg  ...  Card 27 = carddeck27.jpg
+// Card 28 = carddeck28.jpg  (info card — NOT in draw pool)
+// Card 29 = carddeck29.jpg  (back pattern — used as card back)
+
+const BASE = "IMAGES/CARD DECK/";
+const BACK = BASE + "carddeck29.jpg";
+
+const CARDS = [
+  {file:"carddeck.jpg",   name:"Pedro Páramo",        keys:["Knowledge","Expanding"],                   meaning:"You are being invited to go deeper into a story — yours or someone else's. Knowledge expands beyond what is visible. Something buried is waiting to be excavated and reimagined.", energy:"expansive, literary, rooted in memory"},
+  {file:"carddeck2.jpg",  name:"Pedro Páramo",        keys:["Reflection","Pause","Take a Break"],       meaning:"Mark your place. You don't have to finish everything right now. Pause, breathe, and look back at how far you've already come before moving forward.", energy:"contemplative, patient, reflective"},
+  {file:"carddeck3.jpg",  name:"Botanical Frequencies",keys:["Healing","Peace","Meditate"],              meaning:"You are being called into stillness with purpose. Something around you is vibrating at a frequency you haven't tuned into yet. Slow down enough to hear it. Healing is available when you stop and listen.", energy:"healing, still, frequency-aware"},
+  {file:"carddeck4.jpg",  name:"Botanical Frequencies",keys:["Access","Movement","Admittance"],          meaning:"You've been granted access to something new — a space, a chapter, a version of yourself. Don't hesitate at the door. The ticket is already in your hand. Move through.", energy:"forward-moving, granted access, momentum"},
+  {file:"carddeck5.jpg",  name:"Charro Negro",        keys:["Community","Synergy","Abundance"],         meaning:"What you create is better shared. Community multiplies your energy. This card calls you toward collaboration and abundance thinking. There is more than enough when you pour for others.", energy:"communal, generous, multiplying"},
+  {file:"carddeck6.jpg",  name:"Charro Negro",        keys:["Celebration","Stride","Exuberance"],       meaning:"You are in full stride. This card celebrates momentum, boldness, and the joy of moving with confidence. Honor where you are. Ride into this moment with exuberance.", energy:"bold, celebratory, in full motion"},
+  {file:"carddeck7.jpg",  name:"Red Moon in Venus",   keys:["Desire","Resonance","Magnetism"],          meaning:"Something in you is magnetic right now. Your work, your energy, your vision resonates. This card marks a moment of creative desire finding its form. What you want is also wanting you.", energy:"magnetic, desirous, resonant"},
+  {file:"carddeck8.jpg",  name:"Red Moon in Venus",   keys:["Core","Revelation","Immersion"],           meaning:"The deeper layer is being revealed. This card is about what lives at the center — past the cover, past the packaging. A truth is opening. Let yourself be immersed in what you find inside.", energy:"revelatory, deep, immersive"},
+  {file:"carddeck9.jpg",  name:"Florarium",           keys:["Portal","Reception","Signal"],             meaning:"You are standing at an entrance. Something new is about to begin and it is welcoming you. Pay attention to the signals — they are pointing toward the door you've been looking for.", energy:"threshold, beginning, receptive"},
+  {file:"carddeck10.jpg", name:"Florarium",           keys:["Exhibition","Alignment","Messenger"],      meaning:"Your work is ready to be exhibited. Something you've made is meant to be seen — not hidden, not archived. You are a messenger carrying beauty that belongs in public.", energy:"exhibiting, aligned, ready to share"},
+  {file:"carddeck11.jpg", name:"Club Muse",           keys:["Authenticity","Identity"],                 meaning:"You belong to something real. Your identity as a creative is not a performance — it is earned by showing up and doing the work. This card affirms: you are already in the club.", energy:"authentic, self-assured, belonging"},
+  {file:"carddeck12.jpg", name:"Club Muse",           keys:["Transit","Connection","Junction"],         meaning:"Your work is ready for the street — for the scale of real life. A connection is forming at a junction you didn't expect. Go public. Be seen at full size.", energy:"outward, communal, full-scale"},
+  {file:"carddeck13.jpg", name:"Sacred Flame",        keys:["Isolation","Preserve","Enclosure"],       meaning:"A creative act requires containment before it can expand. This is a moment for focused, protected work. Not every idea needs an audience yet. Tend your fire in private before it lights the room.", energy:"focused, protective, incubating"},
+  {file:"carddeck14.jpg", name:"The Visionary",       keys:["Vitality","Devotion","Ignition"],          meaning:"The third eye opens. Trust what you see before others can see it. Devotion to your vision — even when it feels abstract — is all that's required. Ignite what you've been carrying.", energy:"visionary, devoted, spiritually lit"},
+  {file:"carddeck15.jpg", name:"Between",             keys:["Coordinate","Alignment","Pathway"],        meaning:"You are navigating a transition. Things are not yet in final position, but the pathway is forming. Trust the coordination happening beneath the surface. Walk the route you've been given.", energy:"transitional, navigating, trusting"},
+  {file:"carddeck16.jpg", name:"Between Lights",      keys:["Adhesion","Fragments","Distribution"],     meaning:"Small pieces of your work are spreading further than you know. Fragments of your creativity are sticking to other people's lives. Your influence is distributing itself organically.", energy:"scattered, spreading, organic reach"},
+  {file:"carddeck17.jpg", name:"Lunaura",             keys:["Enclosure","Retention","Development"],     meaning:"Something is developing inside a closed process. Like film in a darkroom, it cannot be rushed or exposed yet. Hold the energy. The development is happening whether you can see it or not.", energy:"quiet, developing, sacred process"},
+  {file:"carddeck18.jpg", name:"Lunaura",             keys:["Projection","Attraction","Vitrine"],       meaning:"Your aura is showing. What you project is attracting exactly what you need. This card signals alignment between your inner world and outer presence — people are seeing you clearly, and being drawn in.", energy:"magnetic, visible, authentic"},
+  {file:"carddeck19.jpg", name:"Sproutlings",         keys:["Rarity","Anticipation","Concealment"],     meaning:"Something rare is forming but must remain hidden a little longer. Concealment is part of the magic — anticipation is building. When you reveal what you've been nurturing, it will feel like a gift.", energy:"mysterious, rare, building anticipation"},
+  {file:"carddeck20.jpg", name:"Sproutlings",         keys:["Collective","Divination","Revelation"],    meaning:"The full collection is not yet assembled, but each piece holds its own story. Through gathering, something larger is revealed. The revelation lives in the whole.", energy:"gathering, revealing, complete picture"},
+  {file:"carddeck21.jpg", name:"Orchids of Mexico",   keys:["Systematic","Research","Nature"],          meaning:"Go deeper into your roots. Research, study, and systematic attention to origin will unlock your next breakthrough. The answers are in the archive — in nature, in history, in where you came from.", energy:"rooted, scholarly, ancestral"},
+  {file:"carddeck22.jpg", name:"Over the Moon",       keys:["Alluring","Manifestation","Connection"],   meaning:"What you put into the world is beautiful and it is working. This card signals active manifestation. Your creative energy is attracting the right people and moments. Let yourself be alluring.", energy:"abundant, magnetic, in bloom"},
+  {file:"carddeck23.jpg", name:"SMW",                 keys:["Maturation","Transform","Communion"],      meaning:"Something is fermenting — changing through time and pressure into something richer. You cannot rush this transformation. Trust the maturation. What emerges will be worth savoring.", energy:"patient, transforming, deepening"},
+  {file:"carddeck24.jpg", name:"Self-Portrait",       keys:["Relax","Isolation","Introspection"],       meaning:"Return to yourself. This card calls for solitude, stillness, and honest self-observation. Sit with your own light. The most important work right now is understanding who is doing the creating.", energy:"introspective, still, self-knowing"},
+  {file:"carddeck25.jpg", name:"Crystal in Water",    keys:["Cleanse","Purification","Protection"],     meaning:"Something needs to be cleared before you move forward. Old energy, old stories, old identities. This card is a ritual of release — cleanse what no longer serves so the new can flow through freely.", energy:"releasing, cleansing, protective"},
+  {file:"carddeck26.jpg", name:"Friends and I",       keys:["Fun","Friendship","Community"],            meaning:"Your people are your power. This card celebrates joy found in genuine creative community. Don't isolate your work — share it, play with it, let your friends witness your process. Joy is the medicine.", energy:"joyful, communal, playful"},
+  {file:"carddeck27.jpg", name:"Night Stan",          keys:["Shadow","Observing","Vulnerability"],      meaning:"Look closely at what's right in front of you. The ordinary holds extraordinary detail when you really observe. Vulnerability — allowing shadow alongside light — is your greatest strength.", energy:"observant, tender, honest"},
+];
+
+const SPREADS={"past-present-future":["Past","Present","Future"],"mind-body-spirit":["Mind","Body","Spirit"],"situation-action-outcome":["Situation","Action","Outcome"],"what-why-how":["What","Why","How"]};
+const INTROS=["The cards have spoken in the language of creation.","Three works, three energies — one message.","This is not coincidence. This is the reading you needed.","The oracle draws from lived creative work. Listen.","What you make reveals what you are. The cards know."];
+const CLOSES=["you are moving from {0} into {1}, toward {2}. The work is already doing what it needs to do.","these three don't contradict — they complete each other. Rest in the tension between them.","what begins in {0} must pass through {1} to arrive at {2}. Trust the sequence.","the work you make is more connected to your life than you realize. Integrate these three energies.","each card is a different face of the same creative becoming. You are in the middle of it."];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+function buildSyn(cards, pos) {
+  const [c1,c2,c3] = cards, [p1,p2,p3] = pos;
+  const close = pick(CLOSES).replace('{0}', c1.energy.split(',')[0].trim()).replace('{1}', c2.energy.split(',')[0].trim()).replace('{2}', c3.energy.split(',')[0].trim());
+  return [
+    pick(INTROS),
+    `<em>${c1.name}</em> arrives as your ${p1.toLowerCase()} — carrying the energy of ${c1.energy}. ${c1.meaning.split('.')[0]}.`,
+    `In the ${p2.toLowerCase()}, <em>${c2.name}</em> holds the center — ${c2.energy}. ${c2.meaning.split('.')[0]}.`,
+    `And closing with <em>${c3.name}</em> as your ${p3.toLowerCase()} — ${c3.energy}. ${c3.meaning.split('.')[0]}.`,
+    `Together, these three say: <em>${close}</em>`
+  ].map(t => `<p>${t}</p>`).join('');
+}
+
+let spread = "past-present-future", drawn = [], flipped = 0, isDrawn = false;
+const $ = id => document.getElementById(id);
+
+document.querySelectorAll('.sp-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (isDrawn) return;
+    document.querySelectorAll('.sp-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    spread = b.dataset.spread;
+  });
+});
+
+$('drawBtn').addEventListener('click', () => { if (isDrawn) { reset(); } else { drawCards(); } });
+
+function drawCards() {
+  isDrawn = true; flipped = 0;
+  $('drawBtn').disabled = true; $('drawTxt').textContent = '✦ Drawing...';
+  drawn = [...CARDS].sort(() => Math.random() - .5).slice(0, 3);
+  const pos = SPREADS[spread];
+  [0,1,2].forEach(i => {
+    setTimeout(() => { const pl = $(`pl${i}`); pl.textContent = pos[i]; pl.classList.add('vis'); }, i * 200);
+    setTimeout(() => {
+      const c = drawn[i];
+      $(`s${i}`).innerHTML = `<div class="flipper" data-i="${i}"><div class="ci" id="ci${i}"><div class="face"><img src="${BACK}" alt="back"></div><div class="face ff"><img src="${BASE}${c.file}" alt="${c.name}"></div></div></div><div class="sl">${pos[i]}</div>`;
+      $(`s${i}`).querySelector('.flipper').addEventListener('click', () => flip(i));
+    }, i * 400 + 300);
+  });
+  setTimeout(() => { $('hint').classList.add('vis'); $('drawBtn').disabled = false; $('drawTxt').textContent = '↺ New Reading'; }, 3 * 400 + 600);
+}
+
+function flip(i) {
+  const ci = $(`ci${i}`);
+  if (!ci || ci.classList.contains('flipped')) return;
+  ci.classList.add('flipped'); flipped++;
+  buildDetail(i, drawn[i]);
+  if (flipped === 3) setTimeout(showSyn, 700);
+}
+
+function buildDetail(i, c) {
+  const pos = SPREADS[spread];
+  $('div').classList.add('vis');
+  let el = $(`dc${i}`);
+  if (!el) { el = document.createElement('div'); el.className = 'dc'; el.id = `dc${i}`; $('dg').appendChild(el); }
+  el.innerHTML = `<div class="dc-pos">${pos[i]} · ${String(i+1).padStart(2,'0')}</div><div class="dc-name">${c.name}</div><div class="dc-keys">${c.keys.join(' · ')}</div><div class="dc-m">${c.meaning}</div>`;
+  requestAnimationFrame(() => setTimeout(() => el.classList.add('vis'), 50));
+}
+
+function showSyn() {
+  $('hint').classList.remove('vis');
+  $('synTxt').innerHTML = buildSyn(drawn, SPREADS[spread]);
+  $('syn').classList.add('vis');
+  $('syn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function reset() {
+  isDrawn = false; flipped = 0; drawn = [];
+  $('drawTxt').textContent = '✦ Draw Your Cards';
+  $('hint').classList.remove('vis');
+  $('div').classList.remove('vis');
+  $('syn').classList.remove('vis');
+  $('dg').innerHTML = '';
+  [0,1,2].forEach(i => {
+    const p = $(`pl${i}`); p.classList.remove('vis'); p.textContent = '';
+    $(`s${i}`).innerHTML = `<div class="ph">✦</div><div class="sl"></div>`;
+  });
+}
+</script>
+</body>
+</html>
