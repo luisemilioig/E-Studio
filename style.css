@@ -1,9 +1,5 @@
-/* ============================================================
-   E STUDIO — style.css
-   Fonts: MuseoModerno (Google Fonts) + Nimbus Sans stack
-   ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Museomoderno:ital,wght@0,100..900;1,100..900&display=swap');
+/* FIXED: Capitalized the 'M' in MuseoModerno */
+@import url('https://fonts.googleapis.com/css2?family=MuseoModerno:ital,wght@0,100..900;1,100..900&display=swap');
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -18,10 +14,11 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 999px;
-  --font-display: 'Museomoderno','Museo Moderno',Georgia,serif;
+  
+  /* FIXED & OPTIMIZED: Swapped serif fallbacks for clean, avant-garde geometric sans-serifs */
+  --font-display: 'MuseoModerno', 'Futura', 'Century Gothic', Arial, sans-serif;
   --font-body: 'Nimbus Sans','Nimbus Sans L','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
-
 html { scroll-behavior: smooth; }
 
 body {
